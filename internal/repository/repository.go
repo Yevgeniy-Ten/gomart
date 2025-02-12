@@ -8,21 +8,21 @@ import (
 	"gophermart/internal/domain"
 )
 
-type Database struct {
+type Repo struct {
 	conn *pgxpool.Pool
 }
 
-func (d *Database) Close(_ context.Context) {
+func (d *Repo) Close(_ context.Context) {
 	d.conn.Close()
 }
 
-func New(utils *domain.Utils) (*Database, error) {
+func New(utils *domain.Utils) (*Repo, error) {
 	c := context.TODO()
 	conn, err := pgxpool.New(c, utils.C.DatabaseURL)
 	if err != nil {
 		return nil, err
 	}
-	d := &Database{
+	d := &Repo{
 		conn: conn,
 	}
 	if err := d.Init(); err != nil {
@@ -32,7 +32,7 @@ func New(utils *domain.Utils) (*Database, error) {
 	return d, nil
 }
 
-func (d *Database) Init() error {
+func (d *Repo) Init() error {
 	db := stdlib.OpenDBFromPool(d.conn)
 	if err := goose.Up(db, "./migrations"); err != nil {
 		return err

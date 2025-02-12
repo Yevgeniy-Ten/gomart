@@ -1,13 +1,15 @@
 package handlers
 
-import "gophermart/internal/utils"
+import (
+	"gophermart/internal/domain"
+)
 
 type Handler struct {
-	utils *utils.Utils
+	utils *domain.Utils
 }
 
 func New(
-	utils *utils.Utils,
+	utils *domain.Utils,
 ) *Handler {
 	return &Handler{
 		utils: utils,

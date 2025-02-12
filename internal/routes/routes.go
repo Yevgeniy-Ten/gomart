@@ -2,12 +2,14 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
+	"gophermart/internal/domain"
 	h "gophermart/internal/handlers"
-	"gophermart/internal/utils"
+	"gophermart/internal/repository"
 )
 
 func Init(
-	utils *utils.Utils,
+	utils *domain.Utils,
+	repo *repository.Repo,
 ) *gin.Engine {
 	r := gin.Default()
 	handlers := h.New(utils)

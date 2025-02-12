@@ -8,12 +8,8 @@ import (
 
 func New() (*domain.Config, error) {
 	config := &domain.Config{
-		Address: ":8080",
-		//Config: &handlers.Config{
-		//	ServerAddr:  "http://localhost:8080",
-		//	DatabaseURL: "",
-		//	//  DatabaseURL: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
-		//},
+		Address:     ":8081",
+		DatabaseURL: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
 	}
 
 	parseFlags(config)

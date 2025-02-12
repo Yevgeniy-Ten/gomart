@@ -25,8 +25,10 @@ func run() error {
 		return errors.New("failed to initialize utils: " + err.Error())
 	}
 	repo, err := repository.New(u)
-
-	r := routes.Init(u)
+	if err != nil {
+		return errors.New("failed to initialize repository: " + err.Error())
+	}
+	r := routes.Init(u, repo)
 
 	return r.Run(c.Address)
 }
