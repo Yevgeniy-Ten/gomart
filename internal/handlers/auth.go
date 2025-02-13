@@ -25,6 +25,7 @@ func (h *Handler) Register(c *gin.Context) {
 	err = h.repo.SaveUser(context.TODO(), &user)
 	if err != nil {
 		h.utils.L.Warn("error saving user", zap.Error(err))
+		//409 create
 		c.Status(http.StatusInternalServerError)
 		return
 	}
