@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gophermart/internal/domain"
-	"gophermart/internal/repository/orders"
+	"gophermart/internal/repository"
 	"gophermart/internal/utils/session"
 	"io"
 	"net/http"
@@ -49,7 +49,7 @@ func (h *Handler) CreateOrder(c *gin.Context) {
 	}
 	existOrder, err := h.repo.GetOrderWithUserID(context.TODO(), orderNum)
 	if err != nil {
-		var notFoundError *orders.NotFoundError
+		var notFoundError *repository.NotFoundError
 		if !errors.As(err, &notFoundError) {
 			h.utils.L.Warn("error getting order", zap.Error(err))
 			c.Status(500)

@@ -6,14 +6,10 @@ import (
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose"
 	"gophermart/internal/domain"
-	"gophermart/internal/repository/orders"
-	"gophermart/internal/repository/users"
 )
 
 type Repo struct {
 	conn *pgxpool.Pool
-	users.UserRepo
-	orders.OrderRepo
 }
 
 func (d *Repo) Close(_ context.Context) {
@@ -27,9 +23,7 @@ func New(utils *domain.Utils) (*Repo, error) {
 		return nil, err
 	}
 	d := &Repo{
-		conn:      conn,
-		UserRepo:  *users.New(conn),
-		OrderRepo: *orders.New(conn),
+		conn: conn,
 	}
 	if err := d.Init(); err != nil {
 		return nil, err

@@ -1,4 +1,4 @@
-package orders
+package repository
 
 type NotFoundError struct {
 	Number string
