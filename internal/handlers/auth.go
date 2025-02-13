@@ -26,6 +26,7 @@ func (h *Handler) Register(c *gin.Context) {
 	if err != nil {
 		h.utils.L.Warn("error saving user", zap.Error(err))
 		c.Status(http.StatusInternalServerError)
+		return
 	}
 	c.Status(200)
 }
