@@ -1,9 +1,13 @@
 package handlers
 
 import (
+	"context"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gophermart/internal/domain"
+	"gophermart/internal/repository/orders"
+	"gophermart/internal/utils/session"
 	"io"
 	"net/http"
 )
@@ -13,38 +17,46 @@ func (h *Handler) Orders(c *gin.Context) {
 }
 
 func (h *Handler) CreateOrder(c *gin.Context) {
-	//middleware logic 401
+	requestUserID, err := session.GetUserID(c.Request.Header.Get("Authorization"))
+	if err != nil {
+		h.utils.L.Warn("error getting user id", zap.Error(err))
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		c.String(400, "Read error")
+		c.String(http.StatusBadRequest, "Read error")
 		return
 	}
 	orderNum := string(body)
-
 	if orderNum == "" {
 		c.Status(400)
 		return
 	}
-	existOrder, err := h.repo.GetOrderWithUserID(orderNum)
+	existOrder, err := h.repo.GetOrderWithUserID(context.TODO(), orderNum)
 	if err != nil {
-		h.utils.L.Warn("error getting order", zap.Error(err))
-		c.Status(500)
+		var notFoundError *orders.NotFoundError
+		if !errors.As(err, &notFoundError) {
+			h.utils.L.Warn("error getting order", zap.Error(err))
+			c.Status(500)
+			return
+		}
+		err = h.repo.CreateOrder(context.TODO(), &domain.OrderWithUserID{
+			Number: orderNum,
+			UserID: requestUserID,
+		})
+
+		if err != nil {
+			h.utils.L.Error("error creating order", zap.Error(err))
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+		c.Status(http.StatusAccepted)
 		return
 	}
-	//check user id in request
-
-	//after create order
-
-	err = h.repo.CreateOrder(&domain.OrderWithUserID{
-		Number: orderNum,
-		UserID: 1,
-	})
-
-	if err != nil {
-		h.utils.L.Error("error creating order", zap.Error(err))
-		c.Status(500)
-		return
+	if requestUserID != existOrder.UserID {
+		c.Status(http.StatusConflict)
 	}
-
-	c.JSON(http.StatusAccepted, "Hello")
+	c.Status(http.StatusOK)
 }
