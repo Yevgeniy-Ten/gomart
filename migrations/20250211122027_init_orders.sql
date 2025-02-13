@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS orders
     accrual    DECIMAL(10, 2),
     user_id    INT                 NOT NULL REFERENCES users (id),
     status     order_status        NOT NULL DEFAULT 'NEW',
-    created_at TIMESTAMP                    DEFAULT CURRENT_TIMESTAMP
+    uploaded_at TIMESTAMP                    DEFAULT CURRENT_TIMESTAMP
 );
 
 -- +goose StatementEnd

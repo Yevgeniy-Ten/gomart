@@ -13,7 +13,20 @@ import (
 )
 
 func (h *Handler) Orders(c *gin.Context) {
-	c.JSON(200, "Hello")
+	requestUserID, err := session.GetUserID(c.Request.Header.Get("Authorization"))
+	if err != nil {
+		h.utils.L.Warn("error getting user id", zap.Error(err))
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+
+	allOrders, err := h.repo.GetAllOrders(context.TODO(), requestUserID)
+	if err != nil {
+		h.utils.L.Warn("error getting allOrders", zap.Error(err))
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, allOrders)
 }
 
 func (h *Handler) CreateOrder(c *gin.Context) {

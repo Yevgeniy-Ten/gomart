@@ -36,3 +36,27 @@ func (o *OrderRepo) CreateOrder(ctx context.Context, data *domain.OrderWithUserI
 	_, err := o.conn.Exec(ctx, InsertOrder, data.Number, data.UserID)
 	return err
 }
+
+const SelectAllOrders = "SELECT number,accrual,status,uploaded_at FROM orders WHERE user_id = $1"
+
+func (o *OrderRepo) GetAllOrders(ctx context.Context, userID int) ([]domain.Order, error) {
+	rows, err := o.conn.Query(ctx, SelectAllOrders, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var orders []domain.Order
+	for rows.Next() {
+		var order domain.Order
+		var accrual *float64
+		if err := rows.Scan(&order.Number, &accrual, &order.Status, &order.UploadedAt); err != nil {
+			return nil, err
+		}
+		if accrual != nil {
+			order.Accrual = *accrual
+		}
+		orders = append(orders, order)
+	}
+	return orders, nil
+}
