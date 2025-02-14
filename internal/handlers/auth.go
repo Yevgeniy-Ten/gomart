@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gophermart/internal/domain"
+	"gophermart/internal/repository"
 	"gophermart/internal/utils/bcrypt"
 	"gophermart/internal/utils/session"
 	"net/http"
@@ -24,8 +26,12 @@ func (h *Handler) Register(c *gin.Context) {
 	user.Password = hashPass
 	err = h.repo.SaveUser(context.TODO(), &user)
 	if err != nil {
+		var duplicateError *repository.DuplicateError
+		if errors.As(err, &duplicateError) {
+			c.Status(http.StatusConflict)
+			return
+		}
 		h.utils.L.Warn("error saving user", zap.Error(err))
-		//409 create
 		c.Status(http.StatusInternalServerError)
 		return
 	}

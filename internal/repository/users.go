@@ -2,7 +2,10 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"gophermart/internal/domain"
 )
 
@@ -18,6 +21,10 @@ func (d *Repo) SaveUser(ctx context.Context, values *domain.Credentials) error {
 	var userID int
 	err = tx.QueryRow(ctx, InsertUser, values.Login, values.Password).Scan(&userID)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
+			return NewDuplicateError()
+		}
 		return fmt.Errorf("failed to insert user: %w", err)
 	}
 

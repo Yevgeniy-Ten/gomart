@@ -11,6 +11,9 @@ type Repository interface {
 	GetOrderWithUserID(ctx context.Context, number string) (*domain.OrderWithUserID, error)
 	CreateOrder(ctx context.Context, data *domain.OrderWithUserID) error
 	GetAllOrders(ctx context.Context, userID int) ([]domain.Order, error)
+	GetUserBalance(ctx context.Context, userID int) (*domain.Balance, error)
+	BalanceWithdraw(ctx context.Context, userID int, withdraw *domain.OrderToWithdraw) error
+	GetWithdraws(ctx context.Context, userID int) ([]domain.Withdraw, error)
 }
 
 type Handler struct {
