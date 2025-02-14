@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 	"gophermart/internal/domain"
 	"gophermart/internal/repository"
+	"gophermart/internal/utils/lunhchecker"
 	"gophermart/internal/utils/session"
 	"io"
 	"net/http"
@@ -43,7 +44,7 @@ func (h *Handler) CreateOrder(c *gin.Context) {
 		return
 	}
 	orderNum := string(body)
-	if orderNum == "" {
+	if orderNum == "" || !lunhchecker.LuhnCheck(orderNum) {
 		c.Status(400)
 		return
 	}
