@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/jackc/pgx/v5"
 	"gophermart/internal/domain"
 )
@@ -50,4 +51,41 @@ func (d *Repo) GetAllOrders(ctx context.Context, userID int) ([]domain.Order, er
 		orders = append(orders, order)
 	}
 	return orders, nil
+}
+
+const SelectOrdersByNewStatus = `SELECT number FROM orders WHERE status = 'NEW' ORDER BY uploaded_at LIMIT $1`
+
+func (d *Repo) GetNewOrders(ctx context.Context, limit int) ([]string, error) {
+	rows, err := d.conn.Query(ctx, SelectOrdersByNewStatus, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var numbers []string
+	for rows.Next() {
+		var number string
+		if err := rows.Scan(&number); err != nil {
+			return nil, err
+		}
+		numbers = append(numbers, number)
+	}
+	return numbers, nil
+}
+
+const UpdateOrderStatus = "UPDATE orders SET status = $1, accrual = $2 WHERE number = $3"
+
+func (d *Repo) UpdateOrdersWithAccrual(ctx context.Context, accruals []*domain.OrderWithAccrual) error {
+	batch := &pgx.Batch{}
+	for _, a := range accruals {
+		batch.Queue(UpdateOrderStatus, a.Status, a.Accrual, a.Number)
+	}
+	br := d.conn.SendBatch(ctx, batch)
+	defer br.Close()
+	for range accruals {
+		if _, err := br.Exec(); err != nil {
+			return fmt.Errorf("failed to execute batch update: %w", err)
+		}
+	}
+	return nil
 }

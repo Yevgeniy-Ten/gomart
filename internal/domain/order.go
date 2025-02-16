@@ -13,3 +13,8 @@ type Order struct {
 	Status     string    `json:"status"`
 	UploadedAt time.Time `json:"uploaded_at"`
 }
+type OrderWithAccrual struct {
+	Number  string  `json:"number"`
+	Accrual float64 `json:"accrual"`
+	Status  string  `json:"status"`
+}

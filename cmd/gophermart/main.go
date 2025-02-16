@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"gophermart/internal/config"
+	"gophermart/internal/jobs"
 	"gophermart/internal/repository"
 	"gophermart/internal/routes"
 	"gophermart/internal/utils"
@@ -29,6 +30,7 @@ func run() error {
 		return errors.New("failed to initialize repository: " + err.Error())
 	}
 	r := routes.Init(u, repo)
-
+	j := jobs.NewOrdersJob(repo, u)
+	go j.Run()
 	return r.Run(c.Address)
 }
