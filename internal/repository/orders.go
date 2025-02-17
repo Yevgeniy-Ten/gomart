@@ -53,10 +53,10 @@ func (d *Repo) GetAllOrders(ctx context.Context, userID int) ([]domain.Order, er
 	return orders, nil
 }
 
-const SelectOrdersByNewStatus = `SELECT number FROM orders WHERE status = 'NEW' ORDER BY uploaded_at LIMIT $1`
+const SelectOrdersByNewAndProcessingStatus = `SELECT number FROM orders WHERE status in ('NEW','PROCESSING') ORDER BY uploaded_at LIMIT $1`
 
 func (d *Repo) GetNewOrders(ctx context.Context, limit int) ([]string, error) {
-	rows, err := d.conn.Query(ctx, SelectOrdersByNewStatus, limit)
+	rows, err := d.conn.Query(ctx, SelectOrdersByNewAndProcessingStatus, limit)
 	if err != nil {
 		return nil, err
 	}

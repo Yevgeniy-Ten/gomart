@@ -27,8 +27,9 @@ func NewOrdersJob(repo Repo, utils *domain.Utils) *OrdersJob {
 }
 
 func (j *OrdersJob) Run() {
+	ctx := context.Background()
 
-	orders, err := j.GetNewOrders(context.Background(), NumJobs)
+	orders, err := j.GetNewOrders(ctx, NumJobs)
 	if err != nil {
 		j.L.Error("failed to get new orders", zap.Error(err))
 		return
@@ -37,15 +38,18 @@ func (j *OrdersJob) Run() {
 	defer close(doneCh)
 	statusChs := fanOut(doneCh, orders)
 	statusesCh := fanIn(doneCh, statusChs...)
-	result := make([]string, 0)
+	result := make([]*domain.OrderWithAccrual, 0)
 	for status := range statusesCh {
 		result = append(result, status)
 	}
+	if err := j.UpdateOrdersWithAccrual(ctx, result); err != nil {
+		j.L.Error("failed to update orders with accrual", zap.Error(err))
+	}
 }
 
-func fanOut(doneCh chan struct{}, orders []string) []chan string {
+func fanOut(doneCh chan struct{}, orders []string) []chan *domain.OrderWithAccrual {
 	numWorkers := len(orders)
-	channels := make([]chan string, numWorkers)
+	channels := make([]chan *domain.OrderWithAccrual, numWorkers)
 
 	for i, o := range orders {
 		addResultCh := getStatus(doneCh, o)
@@ -55,27 +59,25 @@ func fanOut(doneCh chan struct{}, orders []string) []chan string {
 	return channels
 }
 
-func getStatus(
-	doneCh chan struct{},
-	order string) chan string {
-	// канал, в который отправляются результаты
-	resultCh := make(chan string)
+func getStatus(doneCh chan struct{}, order string) chan *domain.OrderWithAccrual {
+	resultCh := make(chan *domain.OrderWithAccrual)
 
 	go func() {
 		defer close(resultCh)
 		//request to accrual
+		var accrualResponse domain.OrderWithAccrual
 		select {
 		case <-doneCh:
 			return
-		case resultCh <- order:
+		case resultCh <- &accrualResponse:
 		}
 	}()
 
 	return resultCh
 }
 
-func fanIn(doneCh chan struct{}, resultChs ...chan string) chan string {
-	finalCh := make(chan string)
+func fanIn(doneCh chan struct{}, resultChs ...chan *domain.OrderWithAccrual) chan *domain.OrderWithAccrual {
+	finalCh := make(chan *domain.OrderWithAccrual)
 
 	var wg sync.WaitGroup
 

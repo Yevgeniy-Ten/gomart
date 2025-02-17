@@ -2,6 +2,15 @@ package domain
 
 import "time"
 
+type OrderStatus string
+
+const (
+	OrderStatusNew        OrderStatus = "NEW"
+	OrderStatusProcessed  OrderStatus = "PROCESSED"
+	OderStatusInvalid     OrderStatus = "INVALID"
+	OrderStatusProcessing OrderStatus = "PROCESSING"
+)
+
 type OrderWithUserID struct {
 	Number string `json:"number"`
 	UserID int    `json:"-"`
@@ -9,12 +18,12 @@ type OrderWithUserID struct {
 
 type Order struct {
 	OrderWithUserID
-	Accrual    float64   `json:"accrual,omitempty"`
-	Status     string    `json:"status"`
-	UploadedAt time.Time `json:"uploaded_at"`
+	Accrual    float64     `json:"accrual,omitempty"`
+	Status     OrderStatus `json:"status"`
+	UploadedAt time.Time   `json:"uploaded_at"`
 }
 type OrderWithAccrual struct {
-	Number  string  `json:"number"`
-	Accrual float64 `json:"accrual"`
-	Status  string  `json:"status"`
+	Number  string      `json:"number"`
+	Accrual *float64    `json:"accrual"`
+	Status  OrderStatus `json:"status"`
 }
