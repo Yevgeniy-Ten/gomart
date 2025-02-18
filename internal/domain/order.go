@@ -23,7 +23,19 @@ type Order struct {
 	UploadedAt time.Time   `json:"uploaded_at"`
 }
 type OrderWithAccrual struct {
-	Number  string      `json:"number"`
-	Accrual *float64    `json:"accrual"`
+	Number string `json:"number"`
+	AccrualResponse
+}
+
+type AccrualResponse struct {
 	Status  OrderStatus `json:"status"`
+	Accrual *float64    `json:"accrual,omitempty"`
+}
+
+type TooManyRequestsError struct {
+	RetryAfter int
+}
+
+func (e *TooManyRequestsError) Error() string {
+	return "too many requests"
 }
