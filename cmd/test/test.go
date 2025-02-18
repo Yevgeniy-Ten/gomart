@@ -2,8 +2,15 @@ package main
 
 import "fmt"
 
-func main() {
+type User struct {
+	ID int
+}
 
-	str := "Bearer "
-	fmt.Println(str[:6])
+func main() {
+	testChan := make(chan *User)
+	go func() {
+		testChan <- nil
+	}()
+	fmt.Println(<-testChan)
+
 }

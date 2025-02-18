@@ -22,14 +22,19 @@ type Order struct {
 	Status     OrderStatus `json:"status"`
 	UploadedAt time.Time   `json:"uploaded_at"`
 }
+type AccrualResponse struct {
+	Status  OrderStatus `json:"status"`
+	Accrual *float64    `json:"accrual,omitempty"`
+}
+
 type OrderWithAccrual struct {
 	Number string `json:"number"`
 	AccrualResponse
 }
-
-type AccrualResponse struct {
-	Status  OrderStatus `json:"status"`
-	Accrual *float64    `json:"accrual,omitempty"`
+type OrderInJobs struct {
+	Number string `json:"number"`
+	AccrualResponse
+	Error error
 }
 
 type TooManyRequestsError struct {

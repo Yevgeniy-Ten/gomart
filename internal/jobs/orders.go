@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"context"
+	"errors"
 	"go.uber.org/zap"
 	"gophermart/internal/domain"
 	"sync"
@@ -39,11 +40,24 @@ func (j *OrdersJob) Run(initialInterval time.Duration) {
 			return
 		}
 		doneCh := make(chan struct{})
-		statusChs := j.fanOut(doneCh, orders)
-		statusesCh := j.fanIn(doneCh, statusChs...)
+		requestsToAccrual := j.fanOut(doneCh, orders)
+		responsesFromAccrual := j.fanIn(doneCh, requestsToAccrual...)
 		result := make([]*domain.OrderWithAccrual, 0)
-		for status := range statusesCh {
-			result = append(result, status)
+		for order := range responsesFromAccrual {
+			if order.Error != nil {
+				var tooManyRequests *domain.TooManyRequestsError
+				if errors.As(order.Error, &tooManyRequests) {
+					interval = time.Duration(tooManyRequests.RetryAfter) * time.Second
+				}
+				continue
+			}
+			result = append(result, &domain.OrderWithAccrual{
+				Number: order.Number,
+				AccrualResponse: domain.AccrualResponse{
+					Accrual: order.AccrualResponse.Accrual,
+					Status:  order.AccrualResponse.Status,
+				},
+			})
 		}
 		if err := j.UpdateOrdersWithAccrual(ctx, result); err != nil {
 			j.L.Error("failed to update orders with accrual", zap.Error(err))
@@ -53,43 +67,46 @@ func (j *OrdersJob) Run(initialInterval time.Duration) {
 		timer.Reset(interval)
 	}
 }
-func (j *OrdersJob) getStatus(doneCh chan struct{}, order string) chan *domain.OrderWithAccrual {
-	resultCh := make(chan *domain.OrderWithAccrual)
+func (j *OrdersJob) getStatus(doneCh chan struct{}, order string, ctx context.Context, cancel context.CancelFunc) chan *domain.OrderInJobs {
+	resultCh := make(chan *domain.OrderInJobs)
 
 	go func() {
-		defer close(resultCh)
-		fullOrder := domain.OrderWithAccrual{
-			Number: order,
-		}
-		accrualResp, err := j.GetOrderStatus(order)
-		if err != nil {
-			j.L.Error("failed to get order status", zap.Error(err))
-			return
-		}
-		fullOrder.AccrualResponse = *accrualResp
 		select {
 		case <-doneCh:
 			return
-		case resultCh <- &fullOrder:
+		case <-ctx.Done():
+			close(resultCh)
+		default:
+			fullOrder := domain.OrderInJobs{
+				Number: order,
+			}
+			accrualResp, err := j.GetOrderStatus(order)
+			if err != nil {
+				j.L.Error("failed to get order status", zap.Error(err))
+				fullOrder.Error = err
+				cancel()
+			} else {
+				fullOrder.AccrualResponse = *accrualResp
+			}
 		}
+		defer close(resultCh)
 	}()
-
 	return resultCh
 }
-func (j *OrdersJob) fanOut(doneCh chan struct{}, orders []string) []chan *domain.OrderWithAccrual {
+func (j *OrdersJob) fanOut(doneCh chan struct{}, orders []string) []chan *domain.OrderInJobs {
 	numWorkers := len(orders)
-	channels := make([]chan *domain.OrderWithAccrual, numWorkers)
-
+	channels := make([]chan *domain.OrderInJobs, numWorkers)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	for i, o := range orders {
-		addResultCh := j.getStatus(doneCh, o)
-		channels[i] = addResultCh
+		response := j.getStatus(doneCh, o, ctx, cancel)
+		channels[i] = response
 	}
-
 	return channels
 }
 
-func (j *OrdersJob) fanIn(doneCh chan struct{}, resultChs ...chan *domain.OrderWithAccrual) chan *domain.OrderWithAccrual {
-	finalCh := make(chan *domain.OrderWithAccrual)
+func (j *OrdersJob) fanIn(doneCh chan struct{}, resultChs ...chan *domain.OrderInJobs) chan *domain.OrderInJobs {
+	finalCh := make(chan *domain.OrderInJobs)
 
 	var wg sync.WaitGroup
 
