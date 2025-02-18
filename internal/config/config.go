@@ -10,6 +10,7 @@ func New() (*domain.Config, error) {
 	config := &domain.Config{
 		Address:     ":8081",
 		DatabaseURL: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
+		JobInterval: 20,
 	}
 
 	parseFlags(config)

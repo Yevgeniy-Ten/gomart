@@ -8,6 +8,7 @@ import (
 	"gophermart/internal/routes"
 	"gophermart/internal/utils"
 	"log"
+	"time"
 )
 
 func main() {
@@ -31,6 +32,6 @@ func run() error {
 	}
 	r := routes.Init(u, repo)
 	j := jobs.NewOrdersJob(repo, u)
-	go j.Run()
+	go j.Run(time.Duration(c.JobInterval) * time.Second)
 	return r.Run(c.Address)
 }
