@@ -2,10 +2,11 @@ package repository
 
 import (
 	"context"
+	"gophermart/internal/domain"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose"
-	"gophermart/internal/domain"
 )
 
 type Repo struct {

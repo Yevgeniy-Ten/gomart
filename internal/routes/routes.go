@@ -1,11 +1,12 @@
 package routes
 
 import (
-	"github.com/gin-gonic/gin"
 	"gophermart/internal/domain"
 	h "gophermart/internal/handlers"
 	"gophermart/internal/handlers/middleware"
 	"gophermart/internal/repository"
+
+	"github.com/gin-gonic/gin"
 )
 
 func Init(
@@ -14,16 +15,13 @@ func Init(
 ) *gin.Engine {
 	r := gin.Default()
 	handlers := h.New(utils, repo)
-	userApi := r.Group("/api/user")
-	{
-		userApi.POST("/register", handlers.Register)
-		userApi.POST("/login", handlers.Login)
-		userApi.POST("/orders", middleware.HasUserID(utils.L), handlers.CreateOrder)
-		userApi.GET("/orders", middleware.HasUserID(utils.L), handlers.Orders)
-		userApi.GET("/balance", middleware.HasUserID(utils.L), handlers.Balance)
-		userApi.POST("/balance/withdraw", middleware.HasUserID(utils.L), handlers.BalanceWithdraw)
-		userApi.GET("/withdrawals", middleware.HasUserID(utils.L), handlers.Withdrawals)
-	}
-
+	userAPI := r.Group("/api/user")
+	userAPI.POST("/register", handlers.Register)
+	userAPI.POST("/login", handlers.Login)
+	userAPI.POST("/orders", middleware.HasUserID(utils.L), handlers.CreateOrder)
+	userAPI.GET("/orders", middleware.HasUserID(utils.L), handlers.Orders)
+	userAPI.GET("/balance", middleware.HasUserID(utils.L), handlers.Balance)
+	userAPI.POST("/balance/withdraw", middleware.HasUserID(utils.L), handlers.BalanceWithdraw)
+	userAPI.GET("/withdrawals", middleware.HasUserID(utils.L), handlers.Withdrawals)
 	return r
 }

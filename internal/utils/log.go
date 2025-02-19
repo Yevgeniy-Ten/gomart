@@ -9,6 +9,7 @@ func NewLogger() (*zap.Logger, error) {
 	if err != nil {
 		return nil, err
 	}
+	//nolint:errcheck // ignore error because it's not important
 	defer myLogger.Sync()
 	return myLogger, nil
 }

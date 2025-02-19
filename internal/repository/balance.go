@@ -3,9 +3,10 @@ package repository
 import (
 	"context"
 	"errors"
+	"gophermart/internal/domain"
+
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
-	"gophermart/internal/domain"
 )
 
 const (
@@ -27,6 +28,7 @@ func (d *Repo) BalanceWithdraw(ctx context.Context, userID int, withdraw *domain
 	if err != nil {
 		return err
 	}
+	//nolint:errcheck // ignore error because it's not important
 	defer tx.Rollback(ctx)
 	_, err = tx.Exec(ctx, UpdateBalance, withdraw.Sum, userID)
 	if err != nil {

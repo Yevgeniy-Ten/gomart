@@ -2,8 +2,9 @@ package session
 
 import (
 	"errors"
-	"github.com/golang-jwt/jwt/v5"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type Claims struct {
@@ -11,28 +12,31 @@ type Claims struct {
 	UserID int
 }
 
-const TOKEN_EXP = time.Hour * 3
-const SECRET_KEY = "supersecretkey"
+const TokenExp = time.Hour * 3
+const SecretKey = "supersecretkey"
 
 func CreateToken(userID int) (string, error) {
 	claims := &Claims{
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TOKEN_EXP)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TokenExp)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 		userID,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(SECRET_KEY))
+	return token.SignedString([]byte(SecretKey))
 }
 
 // GetUserID Bearer ${token}
 func GetUserID(authString string) (int, error) {
+	if len(authString) < 7 {
+		return 0, errors.New("invalid token")
+	}
 	tokenStr := authString[7:]
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(SECRET_KEY), nil
+		return []byte(SecretKey), nil
 	})
 	if err != nil {
 		return 0, err

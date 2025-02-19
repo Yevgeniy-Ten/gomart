@@ -16,6 +16,7 @@ func LuhnCheck(number string) bool {
 		digit := int(ch - '0')
 		if alternate {
 			digit *= 2
+			//nolint:mnd // lun algo
 			if digit > 9 {
 				digit -= 9
 			}

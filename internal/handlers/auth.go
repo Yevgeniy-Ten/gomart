@@ -3,13 +3,14 @@ package handlers
 import (
 	"context"
 	"errors"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 	"gophermart/internal/domain"
 	"gophermart/internal/repository"
 	"gophermart/internal/utils/bcrypt"
 	"gophermart/internal/utils/session"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) Register(c *gin.Context) {
@@ -35,7 +36,7 @@ func (h *Handler) Register(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-	c.Status(200)
+	c.Status(http.StatusOK)
 }
 
 func (h *Handler) Login(c *gin.Context) {

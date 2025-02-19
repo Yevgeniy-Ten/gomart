@@ -3,10 +3,11 @@ package jobs
 import (
 	"context"
 	"errors"
-	"go.uber.org/zap"
 	"gophermart/internal/domain"
 	"sync"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 const NumJobs = 5
@@ -75,7 +76,7 @@ func (j *OrdersJob) getStatus(doneCh chan struct{}, order string, ctx context.Co
 		case <-doneCh:
 			return
 		case <-ctx.Done():
-			close(resultCh)
+			return
 		default:
 			fullOrder := domain.OrderInJobs{
 				Number: order,

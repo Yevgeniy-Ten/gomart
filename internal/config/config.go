@@ -2,8 +2,9 @@ package config
 
 import (
 	"flag"
-	"github.com/caarlos0/env/v11"
 	"gophermart/internal/domain"
+
+	"github.com/caarlos0/env/v11"
 )
 
 func New() (*domain.Config, error) {

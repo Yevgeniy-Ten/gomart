@@ -3,23 +3,19 @@ package handlers
 import (
 	"context"
 	"errors"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 	"gophermart/internal/domain"
 	"gophermart/internal/repository"
 	"gophermart/internal/utils/lunhchecker"
 	"gophermart/internal/utils/session"
 	"io"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) Orders(c *gin.Context) {
-	requestUserID, err := session.GetUserID(c.Request.Header.Get("Authorization"))
-	if err != nil {
-		h.utils.L.Warn("error getting user id", zap.Error(err))
-		c.Status(http.StatusUnauthorized)
-		return
-	}
+	requestUserID, _ := session.GetUserID(c.Request.Header.Get("Authorization"))
 
 	allOrders, err := h.repo.GetAllOrders(context.TODO(), requestUserID)
 	if err != nil {
@@ -45,7 +41,7 @@ func (h *Handler) CreateOrder(c *gin.Context) {
 	}
 	orderNum := string(body)
 	if orderNum == "" || !lunhchecker.LuhnCheck(orderNum) {
-		c.Status(400)
+		c.Status(http.StatusBadRequest)
 		return
 	}
 	existOrder, err := h.repo.GetOrderWithUserID(context.TODO(), orderNum)
@@ -53,7 +49,7 @@ func (h *Handler) CreateOrder(c *gin.Context) {
 		var notFoundError *repository.NotFoundError
 		if !errors.As(err, &notFoundError) {
 			h.utils.L.Warn("error getting order", zap.Error(err))
-			c.Status(500)
+			c.Status(http.StatusInternalServerError)
 			return
 		}
 		err = h.repo.CreateOrder(context.TODO(), &domain.OrderWithUserID{

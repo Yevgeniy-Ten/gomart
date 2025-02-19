@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-resty/resty/v2"
 	"gophermart/internal/domain"
 	"net/http"
 	"strconv"
+
+	"github.com/go-resty/resty/v2"
 )
 
 func (j *OrdersJob) GetOrderStatus(order string) (*domain.AccrualResponse, error) {

@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/jackc/pgx/v5"
 	"gophermart/internal/domain"
+
+	"github.com/jackc/pgx/v5"
 )
 
 const SelectOrder = "SELECT number, user_id FROM orders WHERE number = $1"

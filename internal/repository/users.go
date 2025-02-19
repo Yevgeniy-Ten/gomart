@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"gophermart/internal/domain"
+
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
-	"gophermart/internal/domain"
 )
 
 const InsertUser = "INSERT INTO users (login,password) VALUES ($1,$2) RETURNING id"
@@ -16,6 +17,7 @@ func (d *Repo) SaveUser(ctx context.Context, values *domain.Credentials) error {
 	if err != nil {
 		return fmt.Errorf("failed to start transaction: %w", err)
 	}
+	//nolint:errcheck // ignore error because it's not important
 	defer tx.Rollback(ctx)
 
 	var userID int
