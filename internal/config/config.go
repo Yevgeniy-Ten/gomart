@@ -10,10 +10,10 @@ import (
 
 func New() (*domain.Config, error) {
 	config := &domain.Config{
-		Address:     "",
-		DatabaseURL: "",
+		Address:     ":8080",
+		DatabaseURL: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
 		JobInterval: 20,
-		AccrualHost: "",
+		AccrualHost: "http://localhost:8081",
 	}
 
 	parseFlags(config)
