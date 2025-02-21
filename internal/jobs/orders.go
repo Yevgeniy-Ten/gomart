@@ -38,7 +38,15 @@ func (j *OrdersJob) Run(initialInterval time.Duration) {
 		orders, err := j.GetNewOrders(ctx, NumJobs)
 		if err != nil {
 			j.L.Error("failed to get new orders", zap.Error(err))
-			return
+			<-timer.C
+			timer.Reset(interval)
+			continue
+		}
+		if len(orders) == 0 {
+			j.L.Info("no new orders")
+			<-timer.C
+			timer.Reset(interval)
+			continue
 		}
 		doneCh := make(chan struct{})
 		requestsToAccrual := j.fanOut(doneCh, orders)
@@ -60,6 +68,7 @@ func (j *OrdersJob) Run(initialInterval time.Duration) {
 				},
 			})
 		}
+		j.L.Info("ORDERS", zap.Any("orders", result))
 		if err := j.UpdateOrdersWithAccrual(ctx, result); err != nil {
 			j.L.Error("failed to update orders with accrual", zap.Error(err))
 		}
@@ -74,6 +83,7 @@ func (j *OrdersJob) getStatus(doneCh chan struct{}, order string, ctx context.Co
 	go func() {
 		select {
 		case <-doneCh:
+			cancel()
 			return
 		case <-ctx.Done():
 			return
@@ -88,6 +98,7 @@ func (j *OrdersJob) getStatus(doneCh chan struct{}, order string, ctx context.Co
 				cancel()
 			} else {
 				fullOrder.AccrualResponse = *accrualResp
+				resultCh <- &fullOrder
 			}
 		}
 		defer close(resultCh)
@@ -98,7 +109,6 @@ func (j *OrdersJob) fanOut(doneCh chan struct{}, orders []string) []chan *domain
 	numWorkers := len(orders)
 	channels := make([]chan *domain.OrderInJobs, numWorkers)
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	for i, o := range orders {
 		response := j.getStatus(doneCh, o, ctx, cancel)
 		channels[i] = response

@@ -25,7 +25,7 @@ func (h *Handler) Register(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 	}
 	user.Password = hashPass
-	err = h.repo.SaveUser(context.TODO(), &user)
+	id, err := h.repo.SaveUser(context.TODO(), &user)
 	if err != nil {
 		var duplicateError *repository.DuplicateError
 		if errors.As(err, &duplicateError) {
@@ -36,7 +36,13 @@ func (h *Handler) Register(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-	c.Status(http.StatusOK)
+	token, err := session.CreateToken(id)
+	if err != nil {
+		h.utils.L.Warn("error creating token", zap.Error(err))
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"token": token})
 }
 
 func (h *Handler) Login(c *gin.Context) {

@@ -12,6 +12,7 @@ func New() (*domain.Config, error) {
 		Address:     ":8081",
 		DatabaseURL: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
 		JobInterval: 20,
+		AccrualHost: "http://localhost:8080",
 	}
 
 	parseFlags(config)
@@ -31,6 +32,12 @@ func parseEnv(config *domain.Config) error {
 	// Обновляем конфигурацию только если переменные окружения заданы
 	if envConfig.Address != "" {
 		config.Address = envConfig.Address
+	}
+	if envConfig.DatabaseURL != "" {
+		config.DatabaseURL = envConfig.DatabaseURL
+	}
+	if envConfig.AccrualHost != "" {
+		config.AccrualHost = envConfig.AccrualHost
 	}
 	return nil
 }

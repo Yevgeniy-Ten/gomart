@@ -12,10 +12,10 @@ import (
 
 const InsertUser = "INSERT INTO users (login,password) VALUES ($1,$2) RETURNING id"
 
-func (d *Repo) SaveUser(ctx context.Context, values *domain.Credentials) error {
+func (d *Repo) SaveUser(ctx context.Context, values *domain.Credentials) (id int, err error) {
 	tx, err := d.conn.Begin(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to start transaction: %w", err)
+		return 0, fmt.Errorf("failed to start transaction: %w", err)
 	}
 	//nolint:errcheck // ignore error because it's not important
 	defer tx.Rollback(ctx)
@@ -25,21 +25,21 @@ func (d *Repo) SaveUser(ctx context.Context, values *domain.Credentials) error {
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
-			return NewDuplicateError()
+			return 0, NewDuplicateError()
 		}
-		return fmt.Errorf("failed to insert user: %w", err)
+		return 0, fmt.Errorf("failed to insert user: %w", err)
 	}
 
 	_, err = tx.Exec(ctx, CreateBalance, userID)
 	if err != nil {
-		return fmt.Errorf("failed to create balance: %w", err)
+		return 0, fmt.Errorf("failed to create balance: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
+		return 0, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	return nil
+	return userID, nil
 }
 
 const SelectUser = "SELECT id, password FROM users WHERE login = $1"

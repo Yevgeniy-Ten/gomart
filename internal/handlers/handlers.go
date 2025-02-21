@@ -6,7 +6,7 @@ import (
 )
 
 type Repository interface {
-	SaveUser(ctx context.Context, user *domain.Credentials) error
+	SaveUser(ctx context.Context, user *domain.Credentials) (int, error)
 	GetUser(ctx context.Context, login string) (*domain.UserIDPassword, error)
 	GetOrderWithUserID(ctx context.Context, number string) (*domain.OrderWithUserID, error)
 	CreateOrder(ctx context.Context, data *domain.OrderWithUserID) error

@@ -28,12 +28,14 @@ func CreateToken(userID int) (string, error) {
 	return token.SignedString([]byte(SecretKey))
 }
 
+const AuthValidLength = 7
+
 // GetUserID Bearer ${token}
 func GetUserID(authString string) (int, error) {
-	if len(authString) < 7 {
+	if len(authString) < AuthValidLength {
 		return 0, errors.New("invalid token")
 	}
-	tokenStr := authString[7:]
+	tokenStr := authString[AuthValidLength:]
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(SecretKey), nil
