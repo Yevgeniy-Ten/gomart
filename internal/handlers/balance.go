@@ -13,7 +13,7 @@ import (
 )
 
 func (h *Handler) Balance(c *gin.Context) {
-	time.Sleep(3 * time.Second)
+	time.Sleep(1 * time.Second)
 	requestUserID, _ := session.GetUserID(c.Request.Header.Get("Authorization"))
 	balance, err := h.repo.GetUserBalance(context.TODO(), requestUserID)
 	if err != nil {
