@@ -42,7 +42,7 @@ func (h *Handler) Register(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-	c.Header("Authorization", token)
+	c.Header("Authorization", `Bearer `+token)
 	c.Status(http.StatusCreated)
 }
 
