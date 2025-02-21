@@ -54,24 +54,35 @@ func (d *Repo) GetAllOrders(ctx context.Context, userID int) ([]domain.Order, er
 	return orders, nil
 }
 
-const SelectOrdersByNewAndProcessingStatus = `SELECT number FROM orders WHERE status in ('NEW','PROCESSING') ORDER BY uploaded_at LIMIT $1`
+const SelectOrdersByNewAndProcessingStatus = `SELECT number, user_id FROM orders WHERE status in ('NEW','PROCESSING') ORDER BY uploaded_at LIMIT $1`
 
-func (d *Repo) GetNewOrders(ctx context.Context, limit int) ([]string, error) {
+func (d *Repo) GetNewOrders(ctx context.Context, limit int) ([]*domain.OrderWithUserID, error) {
 	rows, err := d.conn.Query(ctx, SelectOrdersByNewAndProcessingStatus, limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-
-	var numbers []string
+	var orders []*domain.OrderWithUserID
 	for rows.Next() {
 		var number string
-		if err := rows.Scan(&number); err != nil {
+		var userID int
+		if err := rows.Scan(&number, &userID); err != nil {
 			return nil, err
 		}
-		numbers = append(numbers, number)
+		orders = append(orders, &domain.OrderWithUserID{Number: number, UserID: userID})
 	}
-	return numbers, nil
+	return orders, nil
+}
+
+func GroupAccrualsByUserID(accruals []*domain.OrderWithAccrual) map[int]float64 {
+	grouped := make(map[int]float64)
+	for _, a := range accruals {
+		if a.Accrual == nil {
+			continue
+		}
+		grouped[a.UserID] += *a.Accrual
+	}
+	return grouped
 }
 
 const UpdateOrderStatus = "UPDATE orders SET status = $1, accrual = $2 WHERE number = $3"
@@ -80,6 +91,14 @@ func (d *Repo) UpdateOrdersWithAccrual(ctx context.Context, accruals []*domain.O
 	batch := &pgx.Batch{}
 	for _, a := range accruals {
 		batch.Queue(UpdateOrderStatus, a.Status, a.Accrual, a.Number)
+	}
+
+	userAccruals := GroupAccrualsByUserID(accruals)
+	for userID, accrual := range userAccruals {
+		if accrual == 0 {
+			continue
+		}
+		batch.Queue(AddToBalance, accrual, userID)
 	}
 	br := d.conn.SendBatch(ctx, batch)
 	defer br.Close()

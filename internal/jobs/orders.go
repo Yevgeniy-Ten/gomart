@@ -13,7 +13,7 @@ import (
 const NumJobs = 5
 
 type Repo interface {
-	GetNewOrders(ctx context.Context, limit int) ([]string, error)
+	GetNewOrders(ctx context.Context, limit int) ([]*domain.OrderWithUserID, error)
 	UpdateOrdersWithAccrual(ctx context.Context, orders []*domain.OrderWithAccrual) error
 }
 
@@ -61,7 +61,10 @@ func (j *OrdersJob) Run(initialInterval time.Duration) {
 				continue
 			}
 			result = append(result, &domain.OrderWithAccrual{
-				Number: order.Number,
+				OrderWithUserID: domain.OrderWithUserID{
+					Number: order.Number,
+					UserID: order.UserID,
+				},
 				AccrualResponse: domain.AccrualResponse{
 					Accrual: order.AccrualResponse.Accrual,
 					Status:  order.AccrualResponse.Status,
@@ -77,7 +80,7 @@ func (j *OrdersJob) Run(initialInterval time.Duration) {
 		timer.Reset(interval)
 	}
 }
-func (j *OrdersJob) getStatus(doneCh chan struct{}, order string, ctx context.Context, cancel context.CancelFunc) chan *domain.OrderInJobs {
+func (j *OrdersJob) getStatus(doneCh chan struct{}, order *domain.OrderWithUserID, ctx context.Context, cancel context.CancelFunc) chan *domain.OrderInJobs {
 	resultCh := make(chan *domain.OrderInJobs)
 
 	go func() {
@@ -89,9 +92,10 @@ func (j *OrdersJob) getStatus(doneCh chan struct{}, order string, ctx context.Co
 			return
 		default:
 			fullOrder := domain.OrderInJobs{
-				Number: order,
+				Number: order.Number,
+				UserID: order.UserID,
 			}
-			accrualResp, err := j.GetOrderStatus(order)
+			accrualResp, err := j.GetOrderStatus(order.Number)
 			if err != nil {
 				j.L.Error("failed to get order status", zap.Error(err))
 				fullOrder.Error = err
@@ -105,7 +109,7 @@ func (j *OrdersJob) getStatus(doneCh chan struct{}, order string, ctx context.Co
 	}()
 	return resultCh
 }
-func (j *OrdersJob) fanOut(doneCh chan struct{}, orders []string) []chan *domain.OrderInJobs {
+func (j *OrdersJob) fanOut(doneCh chan struct{}, orders []*domain.OrderWithUserID) []chan *domain.OrderInJobs {
 	numWorkers := len(orders)
 	channels := make([]chan *domain.OrderInJobs, numWorkers)
 	//nolint:govet // because i close ctx in getStatus func

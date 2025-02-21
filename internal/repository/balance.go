@@ -68,3 +68,5 @@ func (d *Repo) GetWithdraws(ctx context.Context, userID int) ([]domain.Withdraw,
 	}
 	return withdraws, nil
 }
+
+const AddToBalance = `UPDATE balance SET current = current + $1 WHERE user_id = $2`

@@ -3,8 +3,8 @@ package domain
 import "time"
 
 type Balance struct {
-	Current  int `json:"current"`
-	Withdraw int `json:"withdraw"`
+	Current  float64 `json:"current"`
+	Withdraw float64 `json:"withdraw"`
 }
 type OrderToWithdraw struct {
 	Order string  `json:"order"`

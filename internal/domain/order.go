@@ -28,13 +28,14 @@ type AccrualResponse struct {
 }
 
 type OrderWithAccrual struct {
-	Number string `json:"number"`
 	AccrualResponse
+	OrderWithUserID
 }
 type OrderInJobs struct {
 	Number string `json:"number"`
 	AccrualResponse
-	Error error
+	Error  error
+	UserID int
 }
 
 type TooManyRequestsError struct {
