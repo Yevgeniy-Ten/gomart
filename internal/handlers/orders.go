@@ -16,8 +16,9 @@ import (
 
 func (h *Handler) Orders(c *gin.Context) {
 	requestUserID, _ := session.GetUserID(c.Request.Header.Get("Authorization"))
-
+	h.utils.L.Info("REQUEST TO ORDERS")
 	allOrders, err := h.repo.GetAllOrders(context.TODO(), requestUserID)
+	h.utils.L.Info("FROM DATABASE", zap.Any("FROM DATABASE", allOrders))
 	if err != nil {
 		h.utils.L.Warn("error getting allOrders", zap.Error(err))
 		c.Status(http.StatusInternalServerError)
