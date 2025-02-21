@@ -42,7 +42,8 @@ func (h *Handler) Register(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.Header("Authorization", token)
+	c.Status(http.StatusCreated)
 }
 
 func (h *Handler) Login(c *gin.Context) {
