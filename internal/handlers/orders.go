@@ -40,8 +40,12 @@ func (h *Handler) CreateOrder(c *gin.Context) {
 		return
 	}
 	orderNum := string(body)
-	if orderNum == "" || !lunhchecker.LuhnCheck(orderNum) {
+	if orderNum == "" {
 		c.Status(http.StatusBadRequest)
+		return
+	}
+	if !lunhchecker.LuhnCheck(orderNum) {
+		c.Status(http.StatusUnprocessableEntity)
 		return
 	}
 	existOrder, err := h.repo.GetOrderWithUserID(context.TODO(), orderNum)
