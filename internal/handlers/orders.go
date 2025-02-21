@@ -67,6 +67,7 @@ func (h *Handler) CreateOrder(c *gin.Context) {
 	}
 	if requestUserID != existOrder.UserID {
 		c.Status(http.StatusConflict)
+		return
 	}
 	c.Status(http.StatusOK)
 }
