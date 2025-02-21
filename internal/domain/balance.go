@@ -7,8 +7,8 @@ type Balance struct {
 	Withdraw int `json:"withdraw"`
 }
 type OrderToWithdraw struct {
-	Order string `json:"order"`
-	Sum   int    `json:"sum"`
+	Order string  `json:"order"`
+	Sum   float64 `json:"sum"`
 }
 type Withdraw struct {
 	OrderToWithdraw

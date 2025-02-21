@@ -1,4 +1,4 @@
-name: gophermart
+wname: gophermart
 
 on:
   workflow_dispatch:
