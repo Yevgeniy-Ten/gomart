@@ -10,7 +10,7 @@ import (
 
 const (
 	CreateBalance     = "INSERT INTO balance (user_id) VALUES ($1)"
-	SelectUserBalance = "SELECT current,withdrawn FROM balance WHERE user_id = $1 FOR UPDATE"
+	SelectUserBalance = "SELECT current,withdrawn FROM balance WHERE user_id = $1"
 )
 
 func (d *Repo) GetUserBalance(ctx context.Context, userID int) (*domain.Balance, error) {
