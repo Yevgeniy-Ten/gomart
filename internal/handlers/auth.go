@@ -67,5 +67,6 @@ func (h *Handler) Login(c *gin.Context) {
 		h.utils.L.Warn("error creating token", zap.Error(err))
 		c.Status(http.StatusInternalServerError)
 	}
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.Header("Authorization", `Bearer `+token)
+	c.Status(http.StatusOK)
 }
