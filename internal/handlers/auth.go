@@ -43,7 +43,7 @@ func (h *Handler) Register(c *gin.Context) {
 		return
 	}
 	c.Header("Authorization", `Bearer `+token)
-	c.Status(http.StatusCreated)
+	c.Status(http.StatusOK)
 }
 
 func (h *Handler) Login(c *gin.Context) {
