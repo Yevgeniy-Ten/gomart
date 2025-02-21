@@ -28,7 +28,9 @@ func (d *Repo) BalanceWithdraw(ctx context.Context, userID int, withdraw *domain
 		return err
 	}
 	defer func() {
-		_ = tx.Rollback(ctx)
+		if err != nil {
+			_ = tx.Rollback(ctx)
+		}
 	}()
 	_, err = tx.Exec(ctx, UpdateBalance, withdraw.Sum, userID)
 	if err != nil {
