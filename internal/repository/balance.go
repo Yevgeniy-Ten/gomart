@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	"gophermart/internal/domain"
@@ -28,10 +27,8 @@ func (d *Repo) BalanceWithdraw(ctx context.Context, userID int, withdraw *domain
 	if err != nil {
 		return err
 	}
-	//nolint:errcheck // ignore error because it's not important
 	defer func() {
-		err = tx.Rollback(ctx)
-		fmt.Println(err, "ROLLBACK ERRRO")
+		_ = tx.Rollback(ctx)
 	}()
 	_, err = tx.Exec(ctx, UpdateBalance, withdraw.Sum, userID)
 	if err != nil {
