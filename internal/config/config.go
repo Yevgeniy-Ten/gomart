@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"flag"
 	"gophermart/internal/domain"
 
@@ -9,17 +10,19 @@ import (
 
 func New() (*domain.Config, error) {
 	config := &domain.Config{
-		Address:     ":8081",
-		DatabaseURL: "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable",
+		Address:     "",
+		DatabaseURL: "",
 		JobInterval: 20,
-		AccrualHost: "http://localhost:8080",
+		AccrualHost: "",
 	}
 
 	parseFlags(config)
 	if err := parseEnv(config); err != nil {
 		return nil, err
 	}
-
+	if config.DatabaseURL == "" || config.AccrualHost == "" || config.Address == "" {
+		return nil, errors.New("no settings provided")
+	}
 	return config, nil
 }
 

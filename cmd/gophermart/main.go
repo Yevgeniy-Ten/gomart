@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"gophermart/internal/config"
 	"gophermart/internal/jobs"
 	"gophermart/internal/repository"
@@ -20,9 +19,6 @@ func main() {
 
 func run() error {
 	c, err := config.New()
-	fmt.Println(c.Address, "ADDRESS")
-	fmt.Println(c.DatabaseURL, "DATABASE")
-	fmt.Println(c.AccrualHost, "Accrual host")
 	if err != nil {
 		return errors.New("failed to initialize config: " + err.Error())
 	}
