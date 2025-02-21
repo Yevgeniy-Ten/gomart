@@ -23,6 +23,7 @@ func (h *Handler) Orders(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
+	h.utils.L.Info("allOrders", zap.Any("allOrders", allOrders))
 	if len(allOrders) == 0 {
 		c.Status(http.StatusNoContent)
 		return
