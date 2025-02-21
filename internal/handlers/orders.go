@@ -23,6 +23,10 @@ func (h *Handler) Orders(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
+	if len(allOrders) == 0 {
+		c.Status(http.StatusNoContent)
+		return
+	}
 	c.JSON(http.StatusOK, allOrders)
 }
 
