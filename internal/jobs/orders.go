@@ -80,7 +80,10 @@ func (j *OrdersJob) Run(initialInterval time.Duration) {
 		timer.Reset(interval)
 	}
 }
-func (j *OrdersJob) getStatus(doneCh chan struct{}, order *domain.OrderWithUserID, ctx context.Context, cancel context.CancelFunc) chan *domain.OrderInJobs {
+func (j *OrdersJob) getStatus(doneCh chan struct{},
+	order *domain.OrderWithUserID,
+	ctx context.Context,
+	cancel context.CancelFunc) chan *domain.OrderInJobs {
 	resultCh := make(chan *domain.OrderInJobs)
 
 	go func() {
