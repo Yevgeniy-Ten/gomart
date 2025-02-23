@@ -1,16 +1,4 @@
 services:
-  gophermart:
-    build: .
-    container_name: gophermart
-    depends_on:
-      db:
-        condition: service_healthy
-    env_file:
-      - .env
-    ports:
-      - "8081:8081"
-    networks:
-      - app_network
   db:
     image: postgres:17.2
     container_name: postgres_db
@@ -26,6 +14,31 @@ services:
       interval: 5s
       retries: 5
       timeout: 3s
+  accrual:
+    build:
+      context: .
+      dockerfile: Dockerfile.accrual
+    container_name: accrual
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app_network
+    ports:
+      - "8080:8080"
+  gophermart:
+    build: .
+    container_name: gophermart
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "8081:8081"
+    networks:
+      - app_network
+
 
 
 networks:
