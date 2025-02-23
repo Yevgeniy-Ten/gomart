@@ -3,9 +3,10 @@ package repository
 import (
 	"context"
 	"errors"
+	"gophermart/internal/domain"
+
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
-	"gophermart/internal/domain"
 )
 
 const (

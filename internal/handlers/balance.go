@@ -3,12 +3,13 @@ package handlers
 import (
 	"context"
 	"errors"
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 	"gophermart/internal/domain"
 	"gophermart/internal/repository"
 	"gophermart/internal/utils/session"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) Balance(c *gin.Context) {
