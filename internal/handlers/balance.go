@@ -19,7 +19,6 @@ func (h *Handler) Balance(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-	h.utils.L.Info("BALANCE CHECK", zap.Any("user_id", balance))
 	c.JSON(http.StatusOK, balance)
 }
 
@@ -52,7 +51,6 @@ func (h *Handler) BalanceWithdraw(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-	h.utils.L.Info("balance withdraw", zap.Any("user_id", &orderToWithdraw))
 	c.Status(http.StatusOK)
 }
 func (h *Handler) Withdrawals(c *gin.Context) {
