@@ -117,6 +117,7 @@ func (j *OrdersJob) fanOut(doneCh chan struct{}, orders []*domain.OrderWithUserI
 	channels := make([]chan *domain.OrderInJobs, numWorkers)
 	//nolint:govet // because i close ctx in getStatus func
 	ctx, cancel := context.WithCancel(context.Background())
+	_ = cancel
 	for i, o := range orders {
 		response := j.getStatus(doneCh, o, ctx, cancel)
 		channels[i] = response
