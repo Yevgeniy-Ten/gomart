@@ -55,12 +55,16 @@ tasks:
             ;;
         esac
   lint:
-      desc: Run linters using golangci-lint
-      cmds:
-        - golangci-lint run --config .golangci.yml
-      silent: true
+    desc: Run linters using golangci-lint
+    cmds:
+      - golangci-lint run --config .golangci.yml
+    silent: true
   tests:
-      desc: Run tests
-      cmds:
-            - go test -v ./...
-      silent: true
+    desc: Run tests
+    cmds:
+      - go test -v ./...
+    silent: true
+  dockerrun:
+    desc: Run docker-compose up
+    cmds:
+      - docker-compose -f deploy/docker-compose.yml up -d

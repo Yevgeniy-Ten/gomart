@@ -16,8 +16,8 @@ services:
       timeout: 3s
   accrual:
     build:
-      context: .
-      dockerfile: Dockerfile.accrual
+      context: ..
+      dockerfile: ./deploy/Dockerfile.accrual
     container_name: accrual
     depends_on:
       db:
@@ -27,7 +27,9 @@ services:
     ports:
       - "8080:8080"
   gophermart:
-    build: .
+    build:
+      context: ..
+      dockerfile: ./deploy/Dockerfile
     container_name: gophermart
     depends_on:
       db:
@@ -38,8 +40,6 @@ services:
       - "8081:8081"
     networks:
       - app_network
-
-
 
 networks:
   app_network:

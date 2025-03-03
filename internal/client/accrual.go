@@ -1,19 +1,18 @@
-package jobs
+package client
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-resty/resty/v2"
 	"gophermart/internal/domain"
 	"net/http"
 	"strconv"
-
-	"github.com/go-resty/resty/v2"
 )
 
-func (j *OrdersJob) GetOrderStatus(order string) (*domain.AccrualResponse, error) {
+func GetAccrualOrderStatus(accrualHost, order string) (*domain.AccrualResponse, error) {
 	client := resty.New()
-	uri := j.Utils.C.AccrualHost + "/api/orders/" + order
+	uri := accrualHost + "/api/orders/" + order
 	resp, err := client.R().Get(uri)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get order status: %w", err)

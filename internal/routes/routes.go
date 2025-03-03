@@ -18,10 +18,10 @@ func Init(
 	userAPI := r.Group("/api/user")
 	userAPI.POST("/register", handlers.Register)
 	userAPI.POST("/login", handlers.Login)
-	userAPI.POST("/orders", middleware.HasUserID(utils.L), handlers.CreateOrder)
-	userAPI.GET("/orders", middleware.HasUserID(utils.L), handlers.Orders)
-	userAPI.GET("/balance", middleware.HasUserID(utils.L), handlers.Balance)
-	userAPI.POST("/balance/withdraw", middleware.HasUserID(utils.L), handlers.BalanceWithdraw)
-	userAPI.GET("/withdrawals", middleware.HasUserID(utils.L), handlers.Withdrawals)
+	userAPI.POST("/orders", middleware.Authorize(utils.L), handlers.CreateOrder)
+	userAPI.GET("/orders", middleware.Authorize(utils.L), handlers.ListOrders)
+	userAPI.GET("/balance", middleware.Authorize(utils.L), handlers.Balance)
+	userAPI.POST("/balance/withdraw", middleware.Authorize(utils.L), handlers.BalanceWithdraw)
+	userAPI.GET("/withdrawals", middleware.Authorize(utils.L), handlers.Withdrawals)
 	return r
 }

@@ -3,6 +3,7 @@ package jobs
 import (
 	"context"
 	"errors"
+	"gophermart/internal/client"
 	"gophermart/internal/domain"
 	"sync"
 	"time"
@@ -98,7 +99,7 @@ func (j *OrdersJob) getStatus(doneCh chan struct{},
 				Number: order.Number,
 				UserID: order.UserID,
 			}
-			accrualResp, err := j.GetOrderStatus(order.Number)
+			accrualResp, err := client.GetAccrualOrderStatus(j.Utils.C.AccrualHost, order.Number)
 			if err != nil {
 				j.L.Error("failed to get order status", zap.Error(err))
 				fullOrder.Error = err
@@ -115,14 +116,12 @@ func (j *OrdersJob) getStatus(doneCh chan struct{},
 func (j *OrdersJob) fanOut(doneCh chan struct{}, orders []*domain.OrderWithUserID) []chan *domain.OrderInJobs {
 	numWorkers := len(orders)
 	channels := make([]chan *domain.OrderInJobs, numWorkers)
-	//nolint:govet // because i close ctx in getStatus func
 	ctx, cancel := context.WithCancel(context.Background())
 	_ = cancel
 	for i, o := range orders {
 		response := j.getStatus(doneCh, o, ctx, cancel)
 		channels[i] = response
 	}
-	//nolint:govet // because i close ctx in getStatus func
 	return channels
 }
 

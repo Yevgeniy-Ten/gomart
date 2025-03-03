@@ -14,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (h *Handler) Orders(c *gin.Context) {
+func (h *Handler) ListOrders(c *gin.Context) {
 	requestUserID, _ := session.GetUserID(c.Request.Header.Get("Authorization"))
 	allOrders, err := h.repo.GetAllOrders(context.TODO(), requestUserID)
 	if err != nil {
