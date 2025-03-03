@@ -1,4 +1,4 @@
-FROM golang:1.23
+FROM golang:1.23 AS builder
 
 WORKDIR /app
 
@@ -8,5 +8,11 @@ RUN go mod download
 COPY . .
 
 RUN go build -o gophermart ./cmd/gophermart
+
+FROM alpine:3.14
+
+WORKDIR /app
+
+COPY --from=builder /app/gophermart /app/gophermart
 
 CMD ["/app/gophermart"]

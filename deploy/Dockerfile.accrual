@@ -1,4 +1,4 @@
-FROM debian:bullseye-slim
+FROM alpine:3.14
 
 WORKDIR /app
 COPY ./cmd/accrual/accrual_linux_amd64 /app/accrual
