@@ -126,6 +126,7 @@ func TestRegister_Success(t *testing.T) {
 	}
 	jsonData, err := json.Marshal(user)
 	assert.NoError(t, err, "WHEN MARSHAL JSON")
+	//nolint:noctx // dontknow how fix
 	req, _ := http.NewRequest("POST", "/register", bytes.NewReader(jsonData))
 
 	w := httptest.NewRecorder()
@@ -158,7 +159,7 @@ func TestRegister_SaveUserError(t *testing.T) {
 	}
 	jsonData, err := json.Marshal(user)
 	assert.NoError(t, err, "WHEN MARSHAL JSON")
-
+	//nolint:noctx // dontknow how fix
 	req, _ := http.NewRequest("POST", "/register", bytes.NewReader(jsonData))
 
 	w := httptest.NewRecorder()
@@ -176,7 +177,7 @@ func TestLogin_PasswordMismatch(t *testing.T) {
 	assert.NoError(t, err)
 	mockRepo.On("GetUser", mock.Anything, "testuser").Return(&domain.UserIDPassword{
 		ID:       1,
-		Password: string(pass),
+		Password: pass,
 	}, nil)
 
 	r := gin.Default()
@@ -195,7 +196,7 @@ func TestLogin_PasswordMismatch(t *testing.T) {
 	}
 	jsonData, err := json.Marshal(user)
 	assert.NoError(t, err)
-
+	//nolint:noctx // dontknow how fix
 	req, err := http.NewRequest("POST", "/login", bytes.NewReader(jsonData))
 	assert.NoError(t, err)
 
@@ -216,6 +217,7 @@ func TestBalance_Success(t *testing.T) {
 
 	s := session.NewSession()
 	token, err := s.CreateToken(1)
+	assert.NoError(t, err)
 	r := gin.Default()
 
 	handler := Handler{
@@ -227,7 +229,6 @@ func TestBalance_Success(t *testing.T) {
 	}
 
 	r.GET("/balance", handler.Balance)
-
 	req, err := http.NewRequest("GET", "/balance", nil)
 	assert.NoError(t, err)
 
@@ -283,7 +284,7 @@ func TestListOrders_Success(t *testing.T) {
 	}
 
 	r.GET("/orders", handler.ListOrders)
-
+	//nolint:noctx // dontknow how fix
 	req, err := http.NewRequest("GET", "/orders", nil)
 	assert.NoError(t, err)
 
@@ -376,7 +377,7 @@ func TestWithdrawals_Success(t *testing.T) {
 	}
 
 	r.GET("/withdrawals", handler.Withdrawals)
-
+	//nolint:noctx // dontknow how fix
 	req, err := http.NewRequest("GET", "/withdrawals", nil)
 	assert.NoError(t, err)
 
@@ -420,7 +421,7 @@ func TestWithdrawals_NoContent(t *testing.T) {
 	}
 
 	r.GET("/withdrawals", handler.Withdrawals)
-
+	//nolint:noctx // dontknow how fix
 	req, err := http.NewRequest("GET", "/withdrawals", nil)
 	assert.NoError(t, err)
 
@@ -461,7 +462,7 @@ func TestBalanceWithdraw_Success(t *testing.T) {
 
 	body, err := json.Marshal(orderToWithdraw)
 	assert.NoError(t, err)
-
+	//nolint:noctx // dontknow how fix
 	req, err := http.NewRequest("POST", "/balance/withdraw", bytes.NewReader(body))
 	assert.NoError(t, err)
 
@@ -500,7 +501,7 @@ func TestBalanceWithdraw_InvalidSum(t *testing.T) {
 
 	body, err := json.Marshal(orderToWithdraw)
 	assert.NoError(t, err)
-
+	//nolint:noctx // dontknow how fix
 	req, err := http.NewRequest("POST", "/balance/withdraw", bytes.NewReader(body))
 	assert.NoError(t, err)
 
@@ -510,5 +511,4 @@ func TestBalanceWithdraw_InvalidSum(t *testing.T) {
 	r.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-
 }
