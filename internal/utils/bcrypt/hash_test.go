@@ -14,6 +14,6 @@ func TestHashAndComparePasswords(t *testing.T) {
 	for _, tt := range tests {
 		hashed, err := HashPassword(tt)
 		assert.NoError(t, err)
-		assert.True(t, ComparePasswords(hashed, tt))
+		assert.True(t, ComparePasswords(tt, hashed))
 	}
 }
