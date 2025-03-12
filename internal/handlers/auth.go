@@ -49,26 +49,30 @@ func (h *Handler) Register(c *gin.Context) {
 func (h *Handler) Login(c *gin.Context) {
 	var user domain.Credentials
 	if err := c.BindJSON(&user); err != nil {
-		c.Status(http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
 		return
 	}
+
 	storedUser, err := h.repo.GetUser(context.TODO(), user.Login)
 	if err != nil {
 		h.utils.L.Warn("error getting user", zap.Error(err))
-		c.Status(http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
+
 	if !bcrypt.ComparePasswords(user.Password, storedUser.Password) {
 		h.utils.L.Warn("passwords do not match", zap.String("login", user.Login))
-		c.Status(http.StatusUnauthorized)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
+
 	token, err := h.utils.S.CreateToken(storedUser.ID)
 	if err != nil {
 		h.utils.L.Warn("error creating token", zap.Error(err))
-		c.Status(http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
+
 	c.Header("Authorization", `Bearer `+token)
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, gin.H{"message": "Login successful"})
 }
