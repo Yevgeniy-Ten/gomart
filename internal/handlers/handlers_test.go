@@ -207,7 +207,45 @@ func TestLogin_PasswordMismatch(t *testing.T) {
 
 	mockRepo.AssertExpectations(t)
 }
+func TestLogin_Success(t *testing.T) {
+	mockRepo := new(repository.MockRepository)
 
+	storedPassword := "password123"
+	pass, err := bcrypt.HashPassword(storedPassword)
+	assert.NoError(t, err)
+	mockRepo.On("GetUser", mock.Anything, "testuser").Return(&domain.UserIDPassword{
+		ID:       1,
+		Password: pass,
+	}, nil)
+
+	r := gin.Default()
+	handler := Handler{
+		repo: mockRepo,
+		utils: &domain.Utils{
+			L: zap.NewNop(),
+			S: session.NewSession(),
+		},
+	}
+
+	r.POST("/login", handler.Login)
+
+	user := domain.Credentials{
+		Login:    "testuser",
+		Password: storedPassword,
+	}
+	jsonData, err := json.Marshal(user)
+	assert.NoError(t, err)
+	//nolint:noctx // dontknow how fix
+	req, err := http.NewRequest("POST", "/login", bytes.NewReader(jsonData))
+	assert.NoError(t, err)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	mockRepo.AssertExpectations(t)
+}
 func TestBalance_Success(t *testing.T) {
 	mockRepo := new(repository.MockRepository)
 
