@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"gophermart/internal/domain"
 	"gophermart/internal/repository"
 	"gophermart/internal/utils/bcrypt"
@@ -19,6 +20,7 @@ func (h *Handler) Register(c *gin.Context) {
 		return
 	}
 	hashPass, err := bcrypt.HashPassword(user.Password)
+	fmt.Println(hashPass)
 	if err != nil {
 		h.utils.L.Warn("error hashing password", zap.Error(err))
 		c.Status(http.StatusInternalServerError)
@@ -59,7 +61,6 @@ func (h *Handler) Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
-
 	if !bcrypt.ComparePasswords(user.Password, storedUser.Password) {
 		h.utils.L.Warn("passwords do not match", zap.String("login", user.Login))
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
