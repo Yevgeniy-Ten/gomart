@@ -2,7 +2,6 @@ package domain
 
 import (
 	"go.uber.org/zap"
-	"gophermart/internal/utils/session"
 )
 
 type Config struct {
@@ -11,8 +10,12 @@ type Config struct {
 	AccrualHost string `env:"ACCRUAL_SYSTEM_ADDRESS"`
 	JobInterval int
 }
+type SessionInterface interface {
+	CreateToken(userID int) (string, error)
+	GetUserID(authHeader string) (int, error)
+}
 type Utils struct {
 	L *zap.Logger
 	C *Config
-	S *session.Session
+	S SessionInterface
 }

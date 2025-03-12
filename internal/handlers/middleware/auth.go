@@ -1,14 +1,14 @@
 package middleware
 
 import (
-	"gophermart/internal/utils/session"
+	"gophermart/internal/domain"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-func Authorize(l *zap.Logger, s *session.Session) gin.HandlerFunc {
+func Authorize(l *zap.Logger, s domain.SessionInterface) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		_, err := s.GetUserID(c.Request.Header.Get("Authorization"))
 		if err != nil {

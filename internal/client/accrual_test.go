@@ -2,11 +2,12 @@ package client
 
 import (
 	"errors"
-	"github.com/stretchr/testify/assert"
 	"gophermart/internal/domain"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetAccrualOrderStatus(t *testing.T) {

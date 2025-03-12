@@ -22,6 +22,7 @@ func (h *Handler) Register(c *gin.Context) {
 	if err != nil {
 		h.utils.L.Warn("error hashing password", zap.Error(err))
 		c.Status(http.StatusInternalServerError)
+		return
 	}
 	user.Password = hashPass
 	id, err := h.repo.SaveUser(context.TODO(), &user)
@@ -60,11 +61,13 @@ func (h *Handler) Login(c *gin.Context) {
 	if !bcrypt.ComparePasswords(user.Password, storedUser.Password) {
 		h.utils.L.Warn("passwords do not match", zap.String("login", user.Login))
 		c.Status(http.StatusUnauthorized)
+		return
 	}
 	token, err := h.utils.S.CreateToken(storedUser.ID)
 	if err != nil {
 		h.utils.L.Warn("error creating token", zap.Error(err))
 		c.Status(http.StatusInternalServerError)
+		return
 	}
 	c.Header("Authorization", `Bearer `+token)
 	c.Status(http.StatusOK)

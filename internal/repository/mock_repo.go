@@ -2,8 +2,9 @@ package repository
 
 import (
 	"context"
-	"github.com/stretchr/testify/mock"
 	"gophermart/internal/domain"
+
+	"github.com/stretchr/testify/mock"
 )
 
 type MockRepository struct {
@@ -17,7 +18,11 @@ func (m *MockRepository) SaveUser(ctx context.Context, user *domain.Credentials)
 
 func (m *MockRepository) GetUser(ctx context.Context, login string) (*domain.UserIDPassword, error) {
 	args := m.Called(ctx, login)
-	return args.Get(0).(*domain.UserIDPassword), args.Error(1)
+	result := args.Get(0)
+	if result == nil {
+		return nil, args.Error(1)
+	}
+	return result.(*domain.UserIDPassword), args.Error(1)
 }
 
 func (m *MockRepository) GetOrderWithUserID(ctx context.Context, number string) (*domain.OrderWithUserID, error) {

@@ -8,11 +8,12 @@ import (
 
 func TestTokenCreateAndValidate(t *testing.T) {
 	const UserID = 1
-	token, err := CreateToken(UserID)
+	s := NewSession()
+	token, err := s.CreateToken(UserID)
 	assert.NoError(t, err)
 
 	bearStr := "Bearer " + token
-	userID, err := GetUserID(bearStr)
+	userID, err := s.GetUserID(bearStr)
 	assert.NoError(t, err)
 	assert.Equal(t, UserID, userID)
 }

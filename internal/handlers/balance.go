@@ -14,7 +14,7 @@ import (
 func (h *Handler) Balance(c *gin.Context) {
 	requestUserID, _ := h.utils.S.GetUserID(c.Request.Header.Get("Authorization"))
 	balance, err := h.repo.GetUserBalance(context.TODO(), requestUserID)
-	if err != nil {
+	if err != nil || balance == nil {
 		h.utils.L.Warn("error getting balance", zap.Error(err))
 		c.Status(http.StatusInternalServerError)
 		return
