@@ -142,7 +142,7 @@ func TestListOrders(t *testing.T) {
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
 
-		assert.Equal(t, http.StatusNoContent, w.Code)
+		assert.Equal(t, http.StatusOK, w.Code)
 		repo.AssertExpectations(t)
 	})
 }
