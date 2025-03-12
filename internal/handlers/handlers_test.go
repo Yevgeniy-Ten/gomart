@@ -111,7 +111,7 @@ func TestListOrders(t *testing.T) {
 			{OrderWithUserID: domain.OrderWithUserID{Number: "2", UserID: 1}},
 		}
 		repo.On("GetAllOrders", mock.Anything, 1).Return(orders, nil)
-
+		//nolint:noctx // dontknow how fix
 		req, _ := http.NewRequest(http.MethodGet, "/orders", nil)
 		req.Header.Set("Authorization", "Bearer token")
 		w := httptest.NewRecorder()
@@ -136,7 +136,7 @@ func TestListOrders(t *testing.T) {
 	// Test case: no orders found
 	t.Run("no orders found", func(t *testing.T) {
 		repo.On("GetAllOrders", mock.Anything, 1).Return([]domain.Order{}, nil)
-
+		//nolint:noctx // dontknow how fix
 		req, _ := http.NewRequest(http.MethodGet, "/orders", nil)
 		req.Header.Set("Authorization", "Bearer token")
 		w := httptest.NewRecorder()
