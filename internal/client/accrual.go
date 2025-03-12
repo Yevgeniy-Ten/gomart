@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-resty/resty/v2"
 	"gophermart/internal/domain"
 	"net/http"
 	"strconv"
+
+	"github.com/go-resty/resty/v2"
 )
 
 func GetAccrualOrderStatus(accrualHost, order string) (*domain.AccrualResponse, error) {

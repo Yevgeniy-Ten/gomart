@@ -30,6 +30,10 @@ func run() error {
 	if err != nil {
 		return errors.New("failed to initialize repository: " + err.Error())
 	}
+	if err = repo.Init(); err != nil {
+		return errors.New("failed to create migrations: " + err.Error())
+	}
+
 	r := routes.Init(u, repo)
 	j := jobs.NewOrdersJob(repo, u)
 	go j.Run(time.Duration(c.JobInterval) * time.Second)

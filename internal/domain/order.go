@@ -11,17 +11,18 @@ const (
 	OrderStatusProcessing OrderStatus = "PROCESSING"
 )
 
-type OrderWithUserID struct {
-	Number string `json:"number"`
-	UserID int    `json:"-"`
-}
-
 type Order struct {
 	OrderWithUserID
 	Accrual    float64     `json:"accrual,omitempty"`
 	Status     OrderStatus `json:"status"`
 	UploadedAt time.Time   `json:"uploaded_at"`
 }
+
+type OrderWithUserID struct {
+	Number string `json:"number"`
+	UserID int    `json:"-"`
+}
+
 type AccrualResponse struct {
 	Status  OrderStatus `json:"status"`
 	Accrual *float64    `json:"accrual,omitempty"`

@@ -24,7 +24,7 @@ const InsertIntoPayments = `INSERT INTO payments (sum, user_id, "order") VALUES 
 const UpdateBalance = `UPDATE balance SET current = current - $1, withdrawn = withdrawn + $1 WHERE user_id = $2`
 
 func (d *Repo) BalanceWithdraw(ctx context.Context, userID int, withdraw *domain.OrderToWithdraw) error {
-	tx, err := d.conn.Begin(ctx)
+	tx, err := d.pool.Begin(ctx)
 	if err != nil {
 		return err
 	}

@@ -101,7 +101,7 @@ func (d *Repo) UpdateOrdersWithAccrual(ctx context.Context, accruals []*domain.O
 		}
 		batch.Queue(AddToBalance, accrual, userID)
 	}
-	br := d.conn.SendBatch(ctx, batch)
+	br := d.pool.SendBatch(ctx, batch)
 	defer br.Close()
 	for range accruals {
 		if _, err := br.Exec(); err != nil {

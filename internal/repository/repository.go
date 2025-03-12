@@ -4,13 +4,24 @@ import (
 	"context"
 	"gophermart/internal/domain"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose"
 )
 
+//go:generate mockgen -source=repository.go -destination=mocks/mock_dbpool.go -package=mocks
+type DBPool interface {
+	Exec(ctx context.Context, sql string, args ...interface{}) (pgconn.CommandTag, error)
+	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
+	Query(ctx context.Context, sql string, args ...interface{}) (pgx.Rows, error)
+	Close()
+}
+
 type Repo struct {
-	conn *pgxpool.Pool
+	conn DBPool
+	pool *pgxpool.Pool
 }
 
 func (d *Repo) Close(_ context.Context) {
@@ -23,18 +34,15 @@ func New(utils *domain.Utils) (*Repo, error) {
 	if err != nil {
 		return nil, err
 	}
-	d := &Repo{
-		conn: conn,
-	}
-	if err := d.Init(); err != nil {
-		return nil, err
-	}
-
+	d := NewWithPool(conn)
+	d.pool = conn
 	return d, nil
 }
-
+func NewWithPool(pool DBPool) *Repo {
+	return &Repo{conn: pool}
+}
 func (d *Repo) Init() error {
-	db := stdlib.OpenDBFromPool(d.conn)
+	db := stdlib.OpenDBFromPool(d.pool)
 	if err := goose.Up(db, "./migrations"); err != nil {
 		return err
 	}

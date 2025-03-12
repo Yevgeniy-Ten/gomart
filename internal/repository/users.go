@@ -13,7 +13,7 @@ import (
 const InsertUser = "INSERT INTO users (login,password) VALUES ($1,$2) RETURNING id"
 
 func (d *Repo) SaveUser(ctx context.Context, values *domain.Credentials) (id int, err error) {
-	tx, err := d.conn.Begin(ctx)
+	tx, err := d.pool.Begin(ctx)
 	if err != nil {
 		return 0, fmt.Errorf("failed to start transaction: %w", err)
 	}
