@@ -3,6 +3,7 @@ package jobs
 import (
 	"context"
 	"errors"
+	"gophermart/internal/client"
 	"gophermart/internal/domain"
 	"sync"
 	"time"
@@ -98,7 +99,7 @@ func (j *OrdersJob) getStatus(doneCh chan struct{},
 				Number: order.Number,
 				UserID: order.UserID,
 			}
-			accrualResp, err := j.GetOrderStatus(order.Number)
+			accrualResp, err := client.GetAccrualOrderStatus(j.Utils.C.AccrualHost, order.Number)
 			if err != nil {
 				j.L.Error("failed to get order status", zap.Error(err))
 				fullOrder.Error = err
