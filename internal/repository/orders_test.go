@@ -2,13 +2,14 @@ package repository
 
 import (
 	"context"
+	"gophermart/internal/domain"
+	"gophermart/internal/repository/mocks"
+	"testing"
+
 	"github.com/golang/mock/gomock"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gophermart/internal/domain"
-	"gophermart/internal/repository/mocks"
-	"testing"
 )
 
 type orderRow struct {

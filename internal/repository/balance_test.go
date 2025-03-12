@@ -2,11 +2,12 @@ package repository
 
 import (
 	"context"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/require"
 	"gophermart/internal/domain"
 	"gophermart/internal/repository/mocks"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/require"
 )
 
 // 🔹 Фейковая структура, которая реализует `pgx.Row`
