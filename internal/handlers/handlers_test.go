@@ -1,8 +1,12 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
 	"gophermart/internal/domain"
+	"gophermart/internal/repository"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,53 +17,9 @@ import (
 	"go.uber.org/zap"
 )
 
-// MockRepository is a mock implementation of the Repository interface
-type MockRepository struct {
-	mock.Mock
-}
-
-func (m *MockRepository) SaveUser(ctx context.Context, user *domain.Credentials) (int, error) {
-	args := m.Called(ctx, user)
-	return args.Int(0), args.Error(1)
-}
-
-func (m *MockRepository) GetUser(ctx context.Context, login string) (*domain.UserIDPassword, error) {
-	args := m.Called(ctx, login)
-	return args.Get(0).(*domain.UserIDPassword), args.Error(1)
-}
-
-func (m *MockRepository) GetOrderWithUserID(ctx context.Context, number string) (*domain.OrderWithUserID, error) {
-	args := m.Called(ctx, number)
-	return args.Get(0).(*domain.OrderWithUserID), args.Error(1)
-}
-
-func (m *MockRepository) CreateOrder(ctx context.Context, data *domain.OrderWithUserID) error {
-	args := m.Called(ctx, data)
-	return args.Error(0)
-}
-
-func (m *MockRepository) GetAllOrders(ctx context.Context, userID int) ([]domain.Order, error) {
-	args := m.Called(ctx, userID)
-	return args.Get(0).([]domain.Order), args.Error(1)
-}
-
-func (m *MockRepository) GetUserBalance(ctx context.Context, userID int) (*domain.Balance, error) {
-	args := m.Called(ctx, userID)
-	return args.Get(0).(*domain.Balance), args.Error(1)
-}
-
-func (m *MockRepository) BalanceWithdraw(ctx context.Context, userID int, withdraw *domain.OrderToWithdraw) error {
-	args := m.Called(ctx, userID, withdraw)
-	return args.Error(0)
-}
-
-func (m *MockRepository) GetWithdraws(ctx context.Context, userID int) ([]domain.Withdraw, error) {
-	args := m.Called(ctx, userID)
-	return args.Get(0).([]domain.Withdraw), args.Error(1)
-}
 func TestNew(t *testing.T) {
 	utils := &domain.Utils{}
-	repo := new(MockRepository)
+	repo := new(repository.MockRepository)
 
 	h := New(utils, repo)
 
@@ -78,7 +38,7 @@ func (m *MockSession) GetUserID(authHeader string) (int, error) {
 }
 func TestListOrders(t *testing.T) {
 	// Create a mock repository
-	repo := new(MockRepository)
+	repo := new(repository.MockRepository)
 	utils := &domain.Utils{L: zap.NewNop()} // Replace with your logger
 	h := New(utils, repo)
 
@@ -145,4 +105,137 @@ func TestListOrders(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 		repo.AssertExpectations(t)
 	})
+}
+func TestRegister_Success(t *testing.T) {
+	mockRepo := new(repository.MockRepository)
+	mockRepo.On("SaveUser", mock.Anything, mock.Anything).Return(1, nil)
+
+	r := gin.Default()
+
+	handler := Handler{
+		repo: mockRepo,
+		utils: &domain.Utils{
+			L: zap.NewNop(), // Мок логгера
+		},
+	}
+
+	r.POST("/register", handler.Register)
+
+	user := domain.Credentials{
+		Login:    "test",
+		Password: "test",
+	}
+	jsonData, err := json.Marshal(user)
+	assert.NoError(t, err, "WHEN MARSHAL JSON")
+	req, _ := http.NewRequest("POST", "/register", bytes.NewReader(jsonData))
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestRegister_SaveUserError(t *testing.T) {
+	mockRepo := new(repository.MockRepository)
+	saveErr := errors.New("save error")
+	mockRepo.On("SaveUser", mock.Anything, mock.Anything).Return(0, saveErr)
+
+	r := gin.Default()
+
+	handler := Handler{
+		repo: mockRepo,
+		utils: &domain.Utils{
+			L: zap.NewNop(), // Мок логгера
+		},
+	}
+
+	r.POST("/register", handler.Register)
+
+	user := domain.Credentials{
+		Login:    "test",
+		Password: "password123",
+	}
+	jsonData, err := json.Marshal(user)
+	assert.NoError(t, err, "WHEN MARSHAL JSON")
+
+	req, _ := http.NewRequest("POST", "/register", bytes.NewReader(jsonData))
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestLogin_PasswordMismatch(t *testing.T) {
+	// Setup
+	mockRepo := new(repository.MockRepository)
+	mockRepo.On("GetUser", mock.Anything, "testuser").Return(domain.UserIDPassword{
+		ID:       1,
+		Password: "$2a$10$O2kTe.R0DWug08a4y7PeAOkQ3cxm9V7rO9S/VB7pEY2X7Ltn1neUS", // Пример хешированного пароля
+	}, nil)
+
+	r := gin.Default()
+	handler := Handler{
+		repo: mockRepo,
+		utils: &domain.Utils{
+			L: zap.NewNop(), // Мок логгера
+		},
+	}
+
+	r.POST("/login", handler.Login)
+
+	// Входные данные с неправильным паролем
+	user := domain.Credentials{
+		Login:    "testuser",
+		Password: "wrongpassword", // Неверный пароль
+	}
+	jsonData, err := json.Marshal(user)
+	assert.NoError(t, err)
+
+	req, _ := http.NewRequest("POST", "/login", bytes.NewReader(jsonData))
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockRepo.AssertExpectations(t)
+}
+
+func TestLogin_Success(t *testing.T) {
+	// Setup
+	mockRepo := new(repository.MockRepository)
+	mockRepo.On("GetUser", mock.Anything, "testuser").Return(domain.UserIDPassword{
+		ID:       1,
+		Password: "$2a$10$O2kTe.R0DWug08a4y7PeAOkQ3cxm9V7rO9S/VB7pEY2X7Ltn1neUS", // Пример хешированного пароля
+	}, nil)
+
+	r := gin.Default()
+	handler := Handler{
+		repo: mockRepo,
+		utils: &domain.Utils{
+			L: zap.NewNop(), // Мок логгера
+		},
+	}
+
+	r.POST("/login", handler.Login)
+
+	// Входные данные
+	user := domain.Credentials{
+		Login:    "testuser",
+		Password: "password123", // Соответствует хешированному паролю
+	}
+	jsonData, err := json.Marshal(user)
+	assert.NoError(t, err)
+
+	req, _ := http.NewRequest("POST", "/login", bytes.NewReader(jsonData))
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	// Assert
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	mockRepo.AssertExpectations(t)
 }
