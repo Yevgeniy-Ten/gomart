@@ -6,7 +6,6 @@ import (
 	"gophermart/internal/domain"
 	"gophermart/internal/repository"
 	"gophermart/internal/utils/lunhchecker"
-	"gophermart/internal/utils/session"
 	"io"
 	"net/http"
 
@@ -15,7 +14,7 @@ import (
 )
 
 func (h *Handler) ListOrders(c *gin.Context) {
-	requestUserID, _ := session.GetUserID(c.Request.Header.Get("Authorization"))
+	requestUserID, _ := h.utils.S.GetUserID(c.Request.Header.Get("Authorization"))
 	allOrders, err := h.repo.GetAllOrders(context.TODO(), requestUserID)
 	if err != nil {
 		h.utils.L.Warn("error getting allOrders", zap.Error(err))
@@ -30,7 +29,7 @@ func (h *Handler) ListOrders(c *gin.Context) {
 }
 
 func (h *Handler) CreateOrder(c *gin.Context) {
-	requestUserID, err := session.GetUserID(c.Request.Header.Get("Authorization"))
+	requestUserID, err := h.utils.S.GetUserID(c.Request.Header.Get("Authorization"))
 	if err != nil {
 		h.utils.L.Warn("error getting user id", zap.Error(err))
 		c.Status(http.StatusUnauthorized)

@@ -6,7 +6,6 @@ import (
 	"gophermart/internal/domain"
 	"gophermart/internal/repository"
 	"gophermart/internal/utils/bcrypt"
-	"gophermart/internal/utils/session"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -36,7 +35,7 @@ func (h *Handler) Register(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-	token, err := session.CreateToken(id)
+	token, err := h.utils.S.CreateToken(id)
 	if err != nil {
 		h.utils.L.Warn("error creating token", zap.Error(err))
 		c.Status(http.StatusInternalServerError)
@@ -62,7 +61,7 @@ func (h *Handler) Login(c *gin.Context) {
 		h.utils.L.Warn("passwords do not match", zap.String("login", user.Login))
 		c.Status(http.StatusUnauthorized)
 	}
-	token, err := session.CreateToken(storedUser.ID)
+	token, err := h.utils.S.CreateToken(storedUser.ID)
 	if err != nil {
 		h.utils.L.Warn("error creating token", zap.Error(err))
 		c.Status(http.StatusInternalServerError)

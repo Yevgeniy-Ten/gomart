@@ -5,7 +5,6 @@ import (
 	"errors"
 	"gophermart/internal/domain"
 	"gophermart/internal/repository"
-	"gophermart/internal/utils/session"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +12,7 @@ import (
 )
 
 func (h *Handler) Balance(c *gin.Context) {
-	requestUserID, _ := session.GetUserID(c.Request.Header.Get("Authorization"))
+	requestUserID, _ := h.utils.S.GetUserID(c.Request.Header.Get("Authorization"))
 	balance, err := h.repo.GetUserBalance(context.TODO(), requestUserID)
 	if err != nil {
 		h.utils.L.Warn("error getting balance", zap.Error(err))
@@ -24,7 +23,7 @@ func (h *Handler) Balance(c *gin.Context) {
 }
 
 func (h *Handler) BalanceWithdraw(c *gin.Context) {
-	requestUserID, err := session.GetUserID(c.Request.Header.Get("Authorization"))
+	requestUserID, err := h.utils.S.GetUserID(c.Request.Header.Get("Authorization"))
 	if err != nil {
 		h.utils.L.Warn("error getting user id", zap.Error(err))
 		c.Status(http.StatusUnauthorized)
@@ -55,7 +54,7 @@ func (h *Handler) BalanceWithdraw(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 func (h *Handler) Withdrawals(c *gin.Context) {
-	requestUserID, err := session.GetUserID(c.Request.Header.Get("Authorization"))
+	requestUserID, err := h.utils.S.GetUserID(c.Request.Header.Get("Authorization"))
 	if err != nil {
 		h.utils.L.Warn("error getting user id", zap.Error(err))
 		c.Status(http.StatusUnauthorized)

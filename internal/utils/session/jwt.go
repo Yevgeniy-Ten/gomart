@@ -11,11 +11,16 @@ type Claims struct {
 	jwt.RegisteredClaims
 	UserID int
 }
+type Session struct{}
+
+func NewSession() *Session {
+	return &Session{}
+}
 
 const TokenExp = time.Hour * 3
 const SecretKey = "supersecretkey"
 
-func CreateToken(userID int) (string, error) {
+func (s *Session) CreateToken(userID int) (string, error) {
 	claims := &Claims{
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TokenExp)),
@@ -31,7 +36,7 @@ func CreateToken(userID int) (string, error) {
 const AuthValidLength = 7
 
 // GetUserID Bearer ${token}
-func GetUserID(authString string) (int, error) {
+func (s *Session) GetUserID(authString string) (int, error) {
 	if len(authString) < AuthValidLength {
 		return 0, errors.New("invalid token")
 	}

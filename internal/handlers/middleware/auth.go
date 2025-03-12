@@ -8,9 +8,9 @@ import (
 	"go.uber.org/zap"
 )
 
-func Authorize(l *zap.Logger) gin.HandlerFunc {
+func Authorize(l *zap.Logger, s *session.Session) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		_, err := session.GetUserID(c.Request.Header.Get("Authorization"))
+		_, err := s.GetUserID(c.Request.Header.Get("Authorization"))
 		if err != nil {
 			if l != nil {
 				l.Debug("error getting user id", zap.Error(err))

@@ -1,6 +1,9 @@
 package domain
 
-import "go.uber.org/zap"
+import (
+	"go.uber.org/zap"
+	"gophermart/internal/utils/session"
+)
 
 type Config struct {
 	Address     string `env:"RUN_ADDRESS"`
@@ -11,4 +14,5 @@ type Config struct {
 type Utils struct {
 	L *zap.Logger
 	C *Config
+	S *session.Session
 }
