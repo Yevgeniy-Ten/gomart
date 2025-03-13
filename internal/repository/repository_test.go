@@ -15,7 +15,7 @@ type userRow struct {
 }
 
 func (m *userRow) Scan(dest ...interface{}) error {
-	*(dest[0].(*int)) = m.id // Теперь ID - это int
+	*(dest[0].(*int)) = m.id
 	*(dest[1].(*string)) = m.password
 	return nil
 }
@@ -25,10 +25,9 @@ func TestGetUser(t *testing.T) {
 
 	mockDB := mocks.NewMockDBPool(ctrl)
 
-	// Ожидаем вызов QueryRow и возвращаем тестовые данные
 	mockDB.EXPECT().
 		QueryRow(gomock.Any(), SelectUser, "test_user").
-		Return(&userRow{123, "hashed_password"}) // Возвращаем фейковые данные
+		Return(&userRow{123, "hashed_password"})
 
 	repo := NewWithPool(mockDB)
 

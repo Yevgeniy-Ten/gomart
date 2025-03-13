@@ -10,14 +10,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// 🔹 Фейковая структура, которая реализует `pgx.Row`
 type balanceRow struct {
 	current  float64
 	withdraw float64
 	err      error
 }
 
-// Реализуем метод Scan(), который заполняет переданные аргументы
 func (m *balanceRow) Scan(dest ...interface{}) error {
 	if m.err != nil {
 		return m.err
@@ -33,7 +31,6 @@ func TestGetUserBalance(t *testing.T) {
 
 	mockDB := mocks.NewMockDBPool(ctrl)
 
-	// 🔹 Данные для теста
 	userID := 1
 	expectedBalance := domain.Balance{
 		Current:  500.75,

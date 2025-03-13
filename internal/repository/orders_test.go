@@ -34,7 +34,6 @@ func TestGetOrderWithUserID(t *testing.T) {
 		UserID: 42,
 	}
 
-	// Настроим поведение мока
 	mockDB.EXPECT().
 		QueryRow(gomock.Any(), SelectOrder, "123456").
 		Return(&orderRow{expectedOrder.Number, expectedOrder.UserID}) // Используем кастомный orderRow
